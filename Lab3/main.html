@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<head>
+<title>Calculator</title>
+<script>
+	function clear1(){
+		inputValue="";
+		outputValue="";
+		document.getElementById("inp").value="0";
+		document.getElementById("out").value="zero";
+	}
+</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="calc">
+	<div class="input">
+		<input type="text" placeholder="0" id="inp">
+		<input type="text" placeholder="zero" id="out">
+	</div>
+	<div class="numpad">
+		<button id="button" onclick="add('1')">1</button>
+		<button id="button" onclick="add('2')">2</button>
+		<button id="button" onclick="add('3')">3</button>
+		<button id="button" onclick="add('4')">4</button>
+		<button id="button" onclick="add('5')">5</button>
+		<button id="button" onclick="add('6')">6</button>
+		<button id="button" onclick="add('7')">7</button>
+		<button id="button" onclick="add('8')">8</button>
+		<button id="button" onclick="add('9')">9</button>
+		<button id="button" onclick="add('0')">0</button>
+		<button id="button" onclick="add('-')">-</button>
+		<button id="button" onclick="add('+')">+</button>
+		<button id="button" onclick="calculate()">=</button>
+		<button id="button" onclick="clear1()">C</button>
+
+	</div>
+</div>
+<script src="script1.js"></script>
+</body>
+</html
