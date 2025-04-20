@@ -1,0 +1,147 @@
+activity_main.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <!-- Static Map Image -->
+    <ImageView
+        android:id="@+id/mapImage"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:src="@drawable/ah" /> <!-- Updated to use ah.jpg -->
+
+    <!-- Buttons for Prev and Next -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/prev_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Prev" />
+
+        <Button
+            android:id="@+id/next_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Next" />
+    </LinearLayout>
+</LinearLayout>
+
+
+MainActivity.java
+
+package com.example.pinlocationsapp;
+
+import android.os.Bundle;
+import android.view.MotionEvent;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class MainActivity extends AppCompatActivity {
+
+    private ImageView mapImage;
+    private List<Location> pinLocations = new ArrayList<>();
+    private int currentPinIndex = 0;
+
+    private Button prevButton, nextButton;
+
+    // List of sample location names (fake names)
+    private String[] locationNames = {"Paris", "New York", "Tokyo",
+            "London", "Berlin", "Sydney"};
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        // Initialize the ImageView for the map
+        mapImage = findViewById(R.id.mapImage);
+
+        // Initialize Prev and Next buttons
+        prevButton = findViewById(R.id.prev_button);
+        nextButton = findViewById(R.id.next_button);
+
+        // Handle taps on the map to add pins
+        mapImage.setOnTouchListener((v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                if (pinLocations.size() < 3) {
+
+                    float x = event.getX();
+                    float y = event.getY();
+
+
+                    String locationName = locationNames[(int)
+                            (Math.random() * locationNames.length)];
+
+                    // Add the location with the name
+                    pinLocations.add(new Location(x, y, locationName));
+
+                    // Display the pin and its location name
+                    Toast.makeText(MainActivity.this, "Pin Added at "
+                            + locationName, Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(MainActivity.this, "You can only add 3 pins.", Toast.LENGTH_SHORT).show();
+                }
+            }
+            return true;
+        });
+
+        // Set onClick listeners for Prev and Next buttons
+        prevButton.setOnClickListener(v -> showPrevPin());
+        nextButton.setOnClickListener(v -> showNextPin());
+    }
+
+    // Show the previous pin
+    private void showPrevPin() {
+        if (pinLocations.isEmpty()) return;
+
+        // Go back to the previous pin
+        currentPinIndex = (currentPinIndex - 1 + pinLocations.size())
+                % pinLocations.size();
+        Location prevLocation = pinLocations.get(currentPinIndex);
+        highlightPin(prevLocation);
+    }
+
+    // Show the next pin
+    private void showNextPin() {
+        if (pinLocations.isEmpty()) return;
+
+        // Go to the next pin
+        currentPinIndex = (currentPinIndex + 1) % pinLocations.size();
+        Location nextLocation = pinLocations.get(currentPinIndex);
+        highlightPin(nextLocation);
+    }
+
+    // Highlight the selected pin and display its location name
+    private void highlightPin(Location location) {
+        // Show the location name in a Toast message
+        Toast.makeText(this, "Pin at: " + location.name,
+                Toast.LENGTH_SHORT).show();
+    }
+
+    // Location class to store the coordinates and name of each pin
+    private static class Location {
+        float x, y;
+        String name;
+
+        Location(float x, float y, String name) {
+            this.x = x;
+            this.y = y;
+            this.name = name;
+        }
+    }
+}
