@@ -1,0 +1,323 @@
+AndroidManifest.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Login"
+        tools:targetApi="31">
+        <activity
+            android:name=".LoginActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".HomeActivity"/>
+        <activity android:name=".SignUpActivity"/>
+    </application>
+
+</manifest>
+
+activity_login.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:gravity="center">
+
+    <EditText
+        android:id="@+id/etUserName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/UserName"
+        android:inputType="text"/>
+
+    <EditText
+        android:id="@+id/etPassword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/Password"
+        android:inputType="textPassword"/>
+
+    <Button
+        android:id="@+id/btnLogin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/Login"/>
+
+    <TextView
+        android:id="@+id/tvSignUpLink"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/Message"
+        android:textColor="@android:color/holo_blue_dark"
+        android:layout_marginTop="16dp"
+        android:clickable="true"/>
+
+</LinearLayout>
+
+activity_signup.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:gravity="center">
+
+    <EditText
+        android:id="@+id/etSignUpUserName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/UserName"
+        android:inputType="text"/>
+
+    <EditText
+        android:id="@+id/etSignUpPassword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/Password"
+        android:inputType="textPassword"/>
+
+    <EditText
+        android:id="@+id/etSignUpConfirmPassword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/Password"
+        android:inputType="textPassword"/>
+
+    <Button
+        android:id="@+id/btnSignUp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/SignUp"/>
+
+</LinearLayout>
+
+activity_home.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/tvSuccessfulLogins"
+        android:layout_width="136dp"
+        android:layout_height="wrap_content"
+        android:text="@string/Successful"/>
+
+    <TextView
+        android:id="@+id/tvUnsuccessfulLogins"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/Unsuccessful"/>
+
+    <TextView
+        android:id="@+id/tvSuccessLoginTime"
+        android:layout_width="136dp"
+        android:layout_height="wrap_content"
+        android:text="@string/Successful_time"/>
+
+    <TextView
+        android:id="@+id/tvFailureLoginTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/Unsuccessful_time"/>
+
+
+</LinearLayout>
+
+LoginActivity.java
+
+package com.example.login;
+
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.widget.TextView;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+public class LoginActivity extends AppCompatActivity {
+    private EditText etUserName;
+    private EditText etPassword;
+    private Button btnLogin;
+    private TextView tvSignUpLink;
+
+    private SharedPreferences sharedPreferences;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState){
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_login);
+
+        sharedPreferences=getSharedPreferences("LoginPrefs",Context.MODE_PRIVATE);
+        etUserName=findViewById(R.id.etUserName);
+        etPassword=findViewById(R.id.etPassword);
+        btnLogin=findViewById(R.id.btnLogin);
+        tvSignUpLink=findViewById(R.id.tvSignUpLink);
+
+        btnLogin.setOnClickListener(v->{
+            String username=etUserName.getText().toString();
+            String password=etPassword.getText().toString();
+
+            String storedUsername=sharedPreferences.getString("username",null);
+            String storedPassword=sharedPreferences.getString("password",null);
+            int successfulLogins=sharedPreferences.getInt("success",0);
+            int unsuccessfulLogins=sharedPreferences.getInt("failure",0);
+
+            SharedPreferences.Editor editor=sharedPreferences.edit();
+            long currentTime=System.currentTimeMillis();
+            if(username.equals(storedUsername) && password.equals(storedPassword)){
+                successfulLogins+=1;
+                editor.putInt("success",successfulLogins);
+                editor.putLong("lastSuccessLogin",currentTime);
+                editor.apply();
+                Intent intent=new Intent(LoginActivity.this,HomeActivity.class);
+                startActivity(intent);
+            } else {
+                unsuccessfulLogins+=1;
+                editor.putInt("failure",unsuccessfulLogins);
+                editor.putLong("lastFailureLogin",currentTime);
+                editor.apply();
+                Toast.makeText(this,"Login failed! Invalid username or password",Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        tvSignUpLink.setOnClickListener(v->{
+            Intent intent=new Intent(LoginActivity.this,SignUpActivity.class);
+            startActivity(intent);
+        });
+    }
+}
+
+SignUpActivity.java
+
+package com.example.login;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+public class SignUpActivity extends AppCompatActivity {
+    private EditText etSignUpUserName;
+    private EditText etSignUpPassword;
+    private EditText etSignUpConfirmPassword;
+
+    private SharedPreferences sharedPreferences;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState){
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_signup);
+
+        sharedPreferences=getSharedPreferences("LoginPrefs",Context.MODE_PRIVATE);
+        etSignUpUserName=findViewById(R.id.etSignUpUserName);
+        etSignUpPassword=findViewById(R.id.etSignUpPassword);
+        etSignUpConfirmPassword=findViewById(R.id.etSignUpConfirmPassword);
+        Button btnSignUp = findViewById(R.id.btnSignUp);
+
+        btnSignUp.setOnClickListener(v->{
+            String username=etSignUpUserName.getText().toString();
+            String password=etSignUpPassword.getText().toString();
+            String confirmPassword=etSignUpConfirmPassword.getText().toString();
+
+            if(!isPasswordValid(password)){
+                Toast.makeText(this,"Password must be at least 6 character, contain uppercase, lowercase and a number",Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if(!password.equals(confirmPassword)){
+                Toast.makeText(this,"Password doesn't match",Toast.LENGTH_SHORT).show();
+                return;
+            }
+            SharedPreferences.Editor editor=sharedPreferences.edit();
+            editor.putString("username",username);
+            editor.putString("password",password);
+            editor.putInt("success",0);
+            editor.putInt("failure",0);
+            editor.apply();
+
+            Toast.makeText(this,"Signup successful",Toast.LENGTH_SHORT).show();
+            finish();
+        });
+
+        }
+        private boolean isPasswordValid(String password){
+            String passwordRegex="^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{6,}$";
+            return password.matches(passwordRegex);
+        }
+}
+
+HomeActivity.java
+
+package com.example.login;
+
+import android.content.Context;
+import android.os.Bundle;
+import android.content.SharedPreferences;
+import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+public class HomeActivity extends AppCompatActivity{
+    @Override
+    protected void onCreate(Bundle savedInstanceState){
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_home);
+
+        TextView tvSuccessfulLogin = findViewById(R.id.tvSuccessfulLogins);
+        TextView tvUnsuccessfulLogin = findViewById(R.id.tvUnsuccessfulLogins);
+        TextView tvSuccessfulLogin_time = findViewById(R.id.tvSuccessLoginTime);
+        TextView tvUnsuccessfulLogin_time = findViewById(R.id.tvFailureLoginTime);
+
+        SharedPreferences sharedPreferences=getSharedPreferences("LoginPrefs",Context.MODE_PRIVATE);
+
+        int successfulLogins=sharedPreferences.getInt("success",0);
+        int unsuccessfulLogins=sharedPreferences.getInt("failure",0);
+        long successfulLogins_time=sharedPreferences.getLong("lastSuccessLogin",-1);
+        long unsuccessfulLogins_time=sharedPreferences.getLong("lastFailureLogin",-1);
+
+        tvSuccessfulLogin.setText(getString(R.string.Successful,successfulLogins));
+        tvUnsuccessfulLogin.setText(getString(R.string.Unsuccessful,unsuccessfulLogins));
+        tvSuccessfulLogin_time.setText(getString(R.string.Successful_time,formatTime(successfulLogins_time)));
+        tvUnsuccessfulLogin_time.setText(getString(R.string.Unsuccessful_time,formatTime(unsuccessfulLogins_time)));
+    }
+
+    private String formatTime(long timestamp){
+        SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",java.util.Locale.getDefault());
+        Date resultDate=new Date(timestamp);
+        return sdf.format(resultDate);
+    }
+}
+

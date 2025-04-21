@@ -1,0 +1,273 @@
+activity_main.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Task Input -->
+    <EditText
+        android:id="@+id/editTextTask"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter Task Name"
+        android:inputType="text"/>
+
+    <!-- DateTime Text -->
+    <TextView
+        android:id="@+id/textViewDateTime"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Date and Time"
+        android:textSize="18sp"
+        android:gravity="center"
+        android:padding="10dp"
+        android:background="#f0f0f0"
+        android:textColor="#000"/>
+
+    <!-- Add Task Button -->
+    <Button
+        android:id="@+id/buttonAddTask"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add Task"
+        android:layout_gravity="center"/>
+
+    <!-- List of Tasks -->
+    <ListView
+        android:id="@+id/listViewTasks"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+
+</LinearLayout>
+
+Task.java
+
+package com.example.todolist;
+
+public class Task {
+    private String taskName;
+    private String dateTime; // Format: "dd/MM/yyyy HH:mm"
+    private boolean notified;
+
+    // Constructor
+    public Task(String taskName, String dateTime) {
+        this.taskName = taskName;
+        this.dateTime = dateTime;
+        this.notified = false; // Initially, the task is not notified
+    }
+
+    // Getters and Setters
+    public String getTaskName() {
+        return taskName;
+    }
+
+    public void setTaskName(String taskName) {
+        this.taskName = taskName;
+    }
+
+    public String getDateTime() {
+        return dateTime;
+    }
+
+    public void setDateTime(String dateTime) {
+        this.dateTime = dateTime;
+    }
+
+    // Getter and Setter for 'notified' flag
+    public boolean isNotified() {
+        return notified;
+    }
+
+    public void setNotified(boolean notified) {
+        this.notified = notified;
+    }
+}
+
+TaskAdapter.java
+
+package com.example.todolist;
+
+import android.content.Context;
+import android.os.Handler;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+
+public class TaskAdapter extends ArrayAdapter<Task> {
+    private Context context;
+    private ArrayList<Task> taskList;
+    private Handler handler;
+
+    public TaskAdapter(Context context, ArrayList<Task> taskList) {
+        super(context, 0, taskList);
+        this.context = context;
+        this.taskList = taskList;
+        this.handler = new Handler(); // Create a Handler to update the UI at regular intervals
+    }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        // Get the task for this position
+        Task task = taskList.get(position);
+
+        // Recycle the view to save memory (reuse views)
+        if (convertView == null) {
+            convertView = LayoutInflater.from(context).inflate(android.R.layout.simple_list_item_1, parent, false);
+        }
+
+        // Get the TextView for the task name
+        TextView taskNameTextView = convertView.findViewById(android.R.id.text1);
+
+        // Set task name and date/time
+        taskNameTextView.setText(task.getTaskName() + " - " + task.getDateTime());
+
+        // Check if the task's time has arrived and show a Toast message if true
+        updateTaskTimeForToast(task);
+
+        // Return the view
+        return convertView;
+    }
+
+    // Helper method to check if the task time has passed and display a Toast message
+    private void updateTaskTimeForToast(Task task) {
+        // Check every 1 second if the task time has arrived
+        handler.postDelayed(() -> {
+            if (!task.isNotified() && isTaskTime(task)) {
+                // Show a Toast when it's time to do the task
+                Toast.makeText(context, "Time to do " + task.getTaskName(), Toast.LENGTH_LONG).show();
+
+                // Set the task as notified (prevents further notifications)
+                task.setNotified(true);
+            }
+        }, 1000); // Check every second
+    }
+
+    // Helper method to check if the task time has passed
+    private boolean isTaskTime(Task task) {
+        try {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+            Date taskDateTime = dateFormat.parse(task.getDateTime());
+            Date currentDate = new Date();
+
+            // Compare the current date and task date
+            return currentDate.after(taskDateTime); // Task time has arrived or passed
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+}
+
+MainActivity.java
+
+package com.example.todolist;
+
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.TextView;
+import androidx.appcompat.app.AppCompatActivity;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+
+public class MainActivity extends AppCompatActivity {
+
+    private EditText editTextTask;
+    private TextView textViewDateTime;
+    private Button buttonAddTask;
+    private ListView listViewTasks;
+
+    private ArrayList<Task> taskList;
+    private TaskAdapter adapter;
+
+    private String selectedDateTime = ""; // Store selected date/time
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        // Initialize UI components
+        editTextTask = findViewById(R.id.editTextTask);
+        textViewDateTime = findViewById(R.id.textViewDateTime);
+        buttonAddTask = findViewById(R.id.buttonAddTask);
+        listViewTasks = findViewById(R.id.listViewTasks);
+
+        taskList = new ArrayList<>(); // Create an ArrayList to hold tasks
+        adapter = new TaskAdapter(this, taskList); // Set up the adapter
+        listViewTasks.setAdapter(adapter); // Attach the adapter to ListView
+
+        // Handle adding a task
+        buttonAddTask.setOnClickListener(v -> {
+            String taskName = editTextTask.getText().toString().trim();
+
+            // Validate task input
+            if (!taskName.isEmpty() && !selectedDateTime.isEmpty()) {
+                // Create a new Task with the name and date/time
+                Task newTask = new Task(taskName, selectedDateTime);
+                taskList.add(newTask);  // Add task to the list
+                adapter.notifyDataSetChanged();  // Refresh ListView to show the new task
+
+                // Clear the input field and reset the date/time selection
+                editTextTask.setText("");
+                selectedDateTime = "";
+                textViewDateTime.setText("Date and Time");
+            }
+        });
+
+        // Handling DateTime selection using DatePickerDialog and TimePickerDialog
+        textViewDateTime.setOnClickListener(v -> showDateTimePicker());
+    }
+
+    // Show DatePickerDialog and TimePickerDialog
+    private void showDateTimePicker() {
+        // Get current date and time
+        Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        int minute = calendar.get(Calendar.MINUTE);
+
+        // Show DatePickerDialog
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this,
+                (view, selectedYear, selectedMonth, selectedDay) -> {
+                    // After date is selected, show TimePickerDialog
+                    showTimePicker(selectedYear, selectedMonth, selectedDay);
+                }, year, month, day);
+        datePickerDialog.show();
+    }
+
+    // Show TimePickerDialog
+    private void showTimePicker(int year, int month, int day) {
+        Calendar calendar = Calendar.getInstance();
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        int minute = calendar.get(Calendar.MINUTE);
+
+        // Show TimePickerDialog
+        TimePickerDialog timePickerDialog = new TimePickerDialog(this,
+                (view, selectedHour, selectedMinute) -> {
+                    // Format and set the selected date/time
+                    selectedDateTime = String.format("%02d/%02d/%04d %02d:%02d",
+                            day, month + 1, year, selectedHour, selectedMinute);
+                    textViewDateTime.setText(selectedDateTime);  // Display the selected date/time
+                }, hour, minute, true);
+        timePickerDialog.show();
+    }
+}

@@ -1,0 +1,164 @@
+activity_main.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Sports shop"
+        android:textSize="30sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/menuHeaderLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:layout_editor_absoluteX="16dp"
+        tools:layout_editor_absoluteY="682dp">
+
+        <TextView
+            android:id="@+id/tvMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Menu"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/menuToggleIcon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_menu_up" />
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/menuContentLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:padding="16dp">
+
+        <Button
+            android:id="@+id/Bat"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Bat"/>
+
+        <Button
+            android:id="@+id/Ball"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ball"/>
+
+        <Button
+            android:id="@+id/Footwear"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Footwear"/>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+MainActivity.java
+
+package com.example.sports;
+
+import android.os.Bundle;
+import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.TranslateAnimation;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+public class MainActivity extends AppCompatActivity {
+
+    private LinearLayout menuHeaderLayout;
+    private LinearLayout menuContentLayout;
+    private ImageView menuToggleIcon;
+    private boolean isMenuExpanded;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        menuHeaderLayout=findViewById(R.id.menuHeaderLayout);
+        menuContentLayout=findViewById(R.id.menuContentLayout);
+        menuToggleIcon=findViewById(R.id.menuToggleIcon);
+
+        menuHeaderLayout.setOnClickListener(v->{
+            toggleMenu();
+        });
+        setButtonListeners();
+    }
+
+    private void toggleMenu(){
+        if(isMenuExpanded){
+            menuContentLayout.setVisibility(View.GONE);
+            menuToggleIcon.setRotation(0);
+            isMenuExpanded=false;
+        } else {
+            menuContentLayout.setVisibility(View.VISIBLE);
+            menuToggleIcon.setRotation(180);
+
+            TranslateAnimation slideup=new TranslateAnimation(
+                    Animation.RELATIVE_TO_SELF, 0.0f,
+                    Animation.RELATIVE_TO_SELF, 0.0f,
+                    Animation.RELATIVE_TO_SELF, 1.0f,
+                    Animation.RELATIVE_TO_SELF, 0.0f
+            );
+            slideup.setDuration(300);
+            menuContentLayout.startAnimation(slideup);
+            isMenuExpanded=true;
+        }
+    }
+
+    private void setButtonListeners(){
+        findViewById(R.id.Bat).setOnClickListener(v->{
+            Toast.makeText(this,"Bats",Toast.LENGTH_SHORT).show();
+        });
+
+        findViewById(R.id.Ball).setOnClickListener(v->{
+            Toast.makeText(this,"Balls",Toast.LENGTH_SHORT).show();
+        });
+
+        findViewById(R.id.Footwear).setOnClickListener(v->{
+            Toast.makeText(this,"Footwear",Toast.LENGTH_SHORT).show();
+        });
+    }
+}
+
+ic_menu_up.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportHeight="24"
+    android:viewportWidth="24">
+    <path
+        android:fillColor="@color/black"
+        android:pathData="M7,14l5,-5,5,5z"/>
+</vector>
